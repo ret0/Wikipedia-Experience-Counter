@@ -1,6 +1,8 @@
 package edu.mit.cci.wikipedia.experience;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -8,16 +10,39 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.simpleframework.xml.core.Persister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.mit.cci.wikipedia.experience.xml.Api;
 
 public class XMLFetcher {
 	
 	private final static Logger LOG = LoggerFactory.getLogger(XMLFetcher.class);
 	
-	public static void main(String []args) {
-	     String xmlResult = new XMLFetcher().executeHTTPRequest("http://www.google.com/");
-	     System.out.println(xmlResult);
+	public static void main(String []args) throws Exception {
+		renameMethodLAAATER("en", "Northeastern_University");
+	}
+
+	private static void renameMethodLAAATER(String langCode, String pageName)
+			throws Exception {
+		String requestURL = generateRequestURL(langCode, pageName);
+		XMLFetcher xmlFetcher = new XMLFetcher();
+		String xmlResult = xmlFetcher.executeHTTPRequest(requestURL);
+		Api xmlResultObject = xmlFetcher.deserialize(xmlResult);
+		Map<String, Integer> ranking = xmlResultObject
+				.generateRankingOfAllNonAnonymousUsers();
+		for (Entry<String, Integer> rankingEntry : ranking.entrySet()) {
+			System.out.println(rankingEntry.getKey() + " = "
+					+ rankingEntry.getValue());
+		}
+	}
+
+	/**
+	 * Last 500 changes to page
+	 */
+	private static String generateRequestURL(String langCode, String pageName) {
+		return "http://" + langCode + ".wikipedia.org/w/api.php?action=query&prop=revisions&titles=" + pageName + "&rvprop=user&rvlimit=500&format=xml";
 	}
 
 	public String executeHTTPRequest(String url) {
@@ -36,6 +61,10 @@ public class XMLFetcher {
 	        }
 		LOG.error("Problem while executing request");
 		return "";
+	}
+	
+	public Api deserialize(String s) throws Exception {
+		return new Persister().read(Api.class, s);
 	}
 
 }
