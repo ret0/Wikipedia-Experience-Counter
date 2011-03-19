@@ -1,4 +1,9 @@
+h2. Usage
+
 * Change Name of Article in XMLFetcher (main method)
+* Run main method
+
+h2. Basic Idea
 
 * Finds the most recent 500 edits of an article, counts the number of edits
   by each of the users in this list of 500 edits
@@ -9,7 +14,7 @@
   prints these numbers to STDOUT
   
   
-Possible Improvements:
+h2. Possible Improvements
 
 * Fetch more than 500 revisions
 * Fetch revisions in a date-range
