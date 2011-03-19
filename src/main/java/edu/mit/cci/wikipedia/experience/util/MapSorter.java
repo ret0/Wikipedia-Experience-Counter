@@ -1,4 +1,4 @@
-package edu.mit.cci.wikipedia.experience;
+package edu.mit.cci.wikipedia.experience.util;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,6 +14,9 @@ import java.util.Map.Entry;
  */
 public class MapSorter<K, V extends Comparable<? super V>> {
 
+	/**
+	 * Returns a new Map, sorted by value
+	 */
 	public Map<K, V> sortByValue(Map<K, V> map) {
 	     List<Entry<K, V>> list = new LinkedList<Entry<K, V>>(map.entrySet());
 	     Collections.sort(list, new Comparator<Entry<K, V>>() {

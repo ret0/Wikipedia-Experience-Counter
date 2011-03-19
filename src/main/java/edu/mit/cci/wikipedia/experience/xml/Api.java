@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
@@ -23,6 +25,9 @@ public class Api {
 		this.query = query;
 	}
 	
+	/**
+	 * Returns a map containing the usernames and the number of edits
+	 */
 	public Map<String, Integer> generateRankingOfAllNonAnonymousUsers() {
 		Map<String, Integer> ranking = new HashMap<String, Integer>();
 		List<Rev> allRevisions = query.getPages().get(0).getRevisions();
@@ -38,16 +43,32 @@ public class Api {
 		}
 		return ranking;
 	}
+	
+	/**
+	 * activity = editCount / daysSinceRegistration
+	 * Score = 0.3 * daysSinceRegistration + 0.3 * editCount + 0.4 * activity 
+	 */
+	public long generateScoreForUser() {
+		User user = query.getUsers().get(0);
+		Double editCount = Double.valueOf(user.getEditcount());
+		DateTime now = new DateTime();
+		DateTime userRegisteredAt = new DateTime(user.getRegistration());
+		int daysSinceRegistration = Days.daysBetween(userRegisteredAt, now)
+				.getDays();
 
+		Double activity = editCount / daysSinceRegistration;
+		Double score = 0.3 * daysSinceRegistration + 0.3 * editCount + 0.4 * activity;
+		return Math.round(score);
+	}
 }
 
 @Root(strict = false)
 class Query {
 
-	@ElementList
+	@ElementList(required = false)
 	private List<Page> pages;
 	
-	@ElementList
+	@ElementList(required = false)
 	private List<User> users;
 
 	public List<Page> getPages() {
@@ -91,6 +112,9 @@ class User {
 	
 	@Attribute
 	private String registration;
+	
+	@Attribute
+	private String name;
 
 	public String getRegistration() {
 		return registration;
@@ -106,6 +130,14 @@ class User {
 
 	public void setEditcount(String editcount) {
 		this.editcount = editcount;
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }
 

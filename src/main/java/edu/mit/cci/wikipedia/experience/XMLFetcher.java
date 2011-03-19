@@ -1,6 +1,8 @@
 package edu.mit.cci.wikipedia.experience;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,10 +18,13 @@ import org.simpleframework.xml.core.Persister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.mit.cci.wikipedia.experience.util.MapSorter;
 import edu.mit.cci.wikipedia.experience.xml.Api;
 
 public class XMLFetcher {
 	
+	private static final String ANSWER_FORMAT = "&format=xml";
+	private static final String DEFAULT_ENCODING = "UTF-8";
 	private static final String LANG_CODE = "en";
 	private static final int MAX_NUMBER_OF_EDITORS = 20;
 	
@@ -27,21 +32,28 @@ public class XMLFetcher {
 	
 	public static void main(String []args) throws Exception {
 		XMLFetcher xmlFetcher = new XMLFetcher();
-		List<String> topEditorsForPage = xmlFetcher.getTopEditorsForPage(LANG_CODE, "Northeastern_University");
+		String pageName = "The_Beatles";
+		List<String> topEditorsForPage = xmlFetcher.getTopEditorsForPage(LANG_CODE, pageName);
 		
 		for (String userName : topEditorsForPage) {
-			System.out.println(xmlFetcher.getUserDetails(userName));
+			String userDetailsXML = xmlFetcher.getUserDetails(userName);
+			Api deserializedUsers = xmlFetcher.deserialize(userDetailsXML);
+			Long userScore = deserializedUsers.generateScoreForUser();
+			System.out.println(userScore);
 		}
 	}
 
-	private String getUserDetails(String userName) {
+	private String getUserDetails(String userName) throws UnsupportedEncodingException {
 		return executeHTTPRequest(generateUserDetailsRequestURL(LANG_CODE, userName));
 	}
 
+	/**
+	 * @return List of the top MAX_NUMBER_OF_EDITORS user names with the 
+	 * most edits for the given page
+	 */
 	private List<String> getTopEditorsForPage(String langCode, String pageName)
 			throws Exception {
 		String requestURL = generateRevisionRequestURL(langCode, pageName);
-		
 		String xmlResult = executeHTTPRequest(requestURL);
 		Api xmlResultObject = deserialize(xmlResult);
 		Map<String, Integer> ranking = xmlResultObject
@@ -62,18 +74,26 @@ public class XMLFetcher {
 	 * Last 500 changes to page, no date restrictions
 	 */
 	private String generateRevisionRequestURL(String langCode, String pageName) {
-		return "http://" + langCode + ".wikipedia.org/w/api.php?action=query&prop=revisions&titles=" + pageName + "&rvprop=user&rvlimit=500&format=xml";
+		return "http://" + langCode
+				+ ".wikipedia.org/w/api.php?action=query&prop=revisions&titles="
+				+ pageName + "&rvprop=user&rvlimit=500" + ANSWER_FORMAT;
 	}
 	
 	/**
 	 * editcount and reg date
 	 */
-	private String generateUserDetailsRequestURL(String langCode, String userName) {
-		//http://en.wikipedia.org/w/api.php?action=query&list=users&ususers=Dogdogkun&usprop=editcount|registration
-		return "http://" + langCode + ".wikipedia.org/w/api.php?action=query&list=users&ususers=Dogdogkun&usprop=editcount|registration&format=xml";
+	private String generateUserDetailsRequestURL(String langCode, String userName) throws UnsupportedEncodingException {
+		String userFields = URLEncoder.encode("editcount|registration", DEFAULT_ENCODING);
+		String userNameEncoded = URLEncoder.encode(userName, DEFAULT_ENCODING);
+		return "http://" + langCode
+				+ ".wikipedia.org/w/api.php?action=query&list=users&ususers="
+				+ userNameEncoded + "&usprop=" + userFields + ANSWER_FORMAT;
 	}
 
-	public String executeHTTPRequest(String url) {
+	/**
+	 * Executes HTTP Request and returns contents as String
+	 */
+	private String executeHTTPRequest(String url) {
 		HttpClient httpclient = new DefaultHttpClient();
 	        try {
 	            HttpGet httpget = new HttpGet(url);
@@ -91,7 +111,10 @@ public class XMLFetcher {
 		return "";
 	}
 	
-	public Api deserialize(String s) throws Exception {
+	/**
+	 * Turns XML String into a Java object
+	 */
+	private Api deserialize(String s) throws Exception {
 		return new Persister().read(Api.class, s);
 	}
 
