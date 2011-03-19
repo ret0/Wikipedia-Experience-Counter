@@ -32,7 +32,11 @@ public class XMLFetcher {
 	
 	public static void main(String []args) throws Exception {
 		XMLFetcher xmlFetcher = new XMLFetcher();
+		// ----------------
+		// PAGE NAME
+		// ----------------
 		String pageName = "The_Beatles";
+		
 		List<String> topEditorsForPage = xmlFetcher.getTopEditorsForPage(LANG_CODE, pageName);
 		
 		for (String userName : topEditorsForPage) {
