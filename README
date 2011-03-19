@@ -1,0 +1,16 @@
+* Change Name of Article in XMLFetcher (main method)
+
+* Finds the most recent 500 edits of an article, counts the number of edits
+  by each of the users in this list of 500 edits
+  
+* Takes the 20 users that made the most changes to the article
+
+* Calculates the "Experience" for each of these users and 
+  prints these numbers to STDOUT
+  
+  
+Possible Improvements:
+
+* Fetch more than 500 revisions
+* Fetch revisions in a date-range
+* Do not execute HTTP Request for each user, bundle them
