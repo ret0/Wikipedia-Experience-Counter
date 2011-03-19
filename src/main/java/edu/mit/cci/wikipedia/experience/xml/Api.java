@@ -46,6 +46,9 @@ class Query {
 
 	@ElementList
 	private List<Page> pages;
+	
+	@ElementList
+	private List<User> users;
 
 	public List<Page> getPages() {
 		return pages;
@@ -55,6 +58,13 @@ class Query {
 		this.pages = pages;
 	}
 
+	public List<User> getUsers() {
+		return users;
+	}
+
+	public void setUsers(List<User> users) {
+		this.users = users;
+	}
 }
 
 @Root(strict = false)
@@ -71,6 +81,32 @@ class Page {
 		return revisions;
 	}
 
+}
+
+@Root(strict = false)
+class User {
+	
+	@Attribute
+	private String editcount;
+	
+	@Attribute
+	private String registration;
+
+	public String getRegistration() {
+		return registration;
+	}
+
+	public void setRegistration(String registration) {
+		this.registration = registration;
+	}
+
+	public String getEditcount() {
+		return editcount;
+	}
+
+	public void setEditcount(String editcount) {
+		this.editcount = editcount;
+	}
 }
 
 class Rev {
@@ -96,5 +132,4 @@ class Rev {
 	public String getUser() {
 		return user;
 	}
-
 }
