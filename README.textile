@@ -19,3 +19,5 @@ h2. Possible Improvements
 * Fetch more than 500 revisions
 * Fetch revisions in a date-range
 * Do not execute HTTP Request for each user, bundle them
+* Use Google Chart Tools to generate diagrams right away
+* Review "Experience-Formula" (Available data for authors: registration date, number of edits)
